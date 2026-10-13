@@ -168,18 +168,30 @@ button:focus-visible,input:focus-visible,label.btn:focus-within{outline:3px soli
     bg.addColorStop(0, '#ffa23a'); bg.addColorStop(0.6, '#f28420'); bg.addColorStop(1, '#d9661a');
     g.fillStyle = bg; g.fillRect(0, 0, W, H);
     const cx = W * 0.25, cy = H * 0.5;
-    // 몸통 줄무늬 (얼굴 부분은 비움)
-    g.fillStyle = '#1f150f';
-    for (let k = 0; k < 16; k++) {
-      const x0 = (k + 0.5) * W / 16 + (k % 2 ? 18 : -10);
-      const dx = Math.min(Math.abs(x0 - cx), W - Math.abs(x0 - cx));
-      if (dx < 300) continue;
-      const y0 = H * (0.05 + (k % 3) * 0.04), y1 = H * (0.62 + (k % 4) * 0.06);
-      g.beginPath();
-      for (let y = y0; y <= y1; y += 8) { const tp = 1 - (y - y0) / (y1 - y0); g.lineTo(x0 + Math.sin(y * 0.012 + k) * 26 - 30 * tp, y); }
-      for (let y = y1; y >= y0; y -= 8) { const tp = 1 - (y - y0) / (y1 - y0); g.lineTo(x0 + Math.sin(y * 0.012 + k) * 26 + 30 * tp, y); }
-      g.closePath(); g.fill();
-    }
+    // 뒤통수 줄무늬: 머리 꼭대기·아래쪽은 비우고, 뒤쪽 가운데를 향해 모이는 깔끔한 V자 무늬만
+    g.fillStyle = '#2a1a12';
+    const bx = W * 0.75;
+    [[0.31, 0.15, 20], [0.43, 0.20, 26], [0.55, 0.21, 27], [0.67, 0.15, 20]].forEach(([v, half, th], j) => {
+      const yc = H * v, gap = 26;
+      for (const s of [-1, 1]) {
+        const x0 = bx + s * gap, x1 = bx + s * W * half, n = 40;
+        g.beginPath();
+        for (let i = 0; i <= n; i++) {
+          const f = i / n, x = x0 + (x1 - x0) * f, taper = Math.sin(Math.PI * Math.min(1, f * 1.15)) ** 0.7;
+          g.lineTo(x, yc - 22 * (1 - f) + 10 * f * f - th * taper);
+        }
+        for (let i = n; i >= 0; i--) {
+          const f = i / n, x = x0 + (x1 - x0) * f, taper = Math.sin(Math.PI * Math.min(1, f * 1.15)) ** 0.7;
+          g.lineTo(x, yc - 22 * (1 - f) + 10 * f * f + th * taper);
+        }
+        g.closePath(); g.fill();
+      }
+    });
+    // 아래쪽은 크림색으로 부드럽게
+    const belly = g.createLinearGradient(0, H * 0.74, 0, H);
+    belly.addColorStop(0, 'rgba(255,236,210,0)'); belly.addColorStop(1, 'rgba(255,236,210,0.85)');
+    g.fillStyle = belly; g.fillRect(0, H * 0.74, W, H * 0.26);
+    g.fillStyle = '#2a1a12';
     // 볼 옆 줄무늬
     for (const s of [-1, 1]) for (let j = 0; j < 3; j++) {
       const y = cy - 40 + j * 55, xs = cx + s * 290, xe = cx + s * (190 - j * 10);
@@ -193,7 +205,7 @@ button:focus-visible,input:focus-visible,label.btn:focus-within{outline:3px soli
     }
     g.beginPath(); g.ellipse(cx, cy + 150, 78, 48, 0, 0, 7); g.fill();
     // 이마의 王 무늬
-    g.strokeStyle = '#1f150f'; g.lineCap = 'round'; g.lineWidth = 20;
+    g.strokeStyle = '#2a1a12'; g.lineCap = 'round'; g.lineWidth = 18;
     [[-62, 62, -205], [-42, 42, -168], [-62, 62, -131]].forEach(([a, b, y]) => { g.beginPath(); g.moveTo(cx + a, cy + y); g.lineTo(cx + b, cy + y); g.stroke(); });
     g.beginPath(); g.moveTo(cx, cy - 205); g.lineTo(cx, cy - 131); g.stroke();
     // 눈
