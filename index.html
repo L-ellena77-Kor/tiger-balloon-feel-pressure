@@ -72,6 +72,10 @@ header p{margin:0;color:var(--muted);font-size:clamp(16px,1.8vw,20px)}
 .lab.full label.check{font-size:15px}
 .lab.full .answer{font-size:17px}
 .lab.full .answer b{font-size:18px}
+.lab.full .ansbox{padding:6px 12px;gap:4px;flex-direction:row;flex-wrap:wrap;align-items:center}
+.lab.full .ansbox .top{flex:0 0 auto}
+.lab.full .ansbox h2{font-size:16px}
+.lab.full .ansbox .answer{flex:1 1 300px}
 .fsbtn.bl{top:auto;right:auto;bottom:10px;left:10px}
 .tabs{display:flex;gap:8px;flex-wrap:wrap}
 .tabs button{font-size:21px;padding:10px 18px}
@@ -193,6 +197,10 @@ footer{color:var(--muted);font-size:14px;text-align:right}
 #p1A .fqend .sent{margin:0;font-family:var(--f-display);white-space:nowrap}
 #p1A .fqend .pumpbtn{font-size:20px;padding:8px 16px}
 @media (max-width:800px){#p1A .fq{grid-template-columns:1fr}}
+#pageT .tnextov{position:absolute;right:12px;bottom:12px;z-index:3}
+#pageT .tstage:not(:fullscreen) .tnextov{display:none}
+.nextpg{white-space:nowrap}
+:root:fullscreen{overflow:auto}
 /* ===== 1쪽: 호랑이 풍선 ===== */
 
 /* Layout: 제목 → 큰 3D 무대(오버레이: 상태 칩, 내 얼굴 카드, 시점 안내, 쿵 효과) → 조작 두 줄. 어두운 단일 테마 */
@@ -284,6 +292,7 @@ footer{color:var(--muted);font-size:14px;text-align:right}
     </div>
     <div class="tguide" id="tg-guide" hidden>나는 기체 입자! 부딪칠 때마다 풍선을 밖으로 밀어요</div>
     <div class="tflash" id="tg-flash"></div>
+    <button class="tbtn tprimary tnextov" data-next="2" type="button">다음 쪽 ▶</button>
     <div class="tcam" id="tg-cam" hidden>
       <div class="tcamview"><video id="tg-video" playsinline muted></video><div class="tcamring"></div></div>
       <p class="tcamtip">얼굴을 동그라미 안에 맞춰 주세요</p>
@@ -306,6 +315,7 @@ footer{color:var(--muted);font-size:14px;text-align:right}
       <button class="tbtn" id="tg-sound" type="button" aria-pressed="false">🔈 소리 끔</button>
       <button class="tbtn" id="tg-play" type="button">⏸ 멈춤</button>
       <button class="tbtn" id="tg-full" type="button">⛶ 전체 화면</button>
+      <button class="tbtn tprimary nextpg" data-next="2" type="button">다음 쪽 ▶ 우리 몸을 누르는 공기</button>
     </div>
     <div class="tbar">
       <div class="tslider"><label for="tg-n">입자 수</label><input type="range" id="tg-n" min="10" max="120" step="10" value="60"><output id="tg-nv">60개</output></div>
@@ -406,6 +416,10 @@ footer{color:var(--muted);font-size:14px;text-align:right}
       </div>
     </div>
   </section>
+  <section class="logbox ansbox">
+    <div class="top"><h2>내 예상이 맞았을까요?</h2><button id="answerBtn1">정답 확인하기</button></div>
+    <p class="answer" id="answerMsg1" hidden></p>
+  </section>
   </div>
 
   <section class="logbox">
@@ -430,10 +444,6 @@ footer{color:var(--muted);font-size:14px;text-align:right}
     <div class="note"><h3>입자 수가 많아지면</h3><p>같은 공간에 입자가 많아지니 벽에 부딪히는 횟수가 늘어나요. 그래서 압력이 커지고 바늘이 올라가요.</p></div>
     <div class="note"><h3>온도가 높아지면</h3><p>입자가 더 빠르게 움직여 벽에 더 자주, 더 세게 부딪혀요. 입자 수가 그대로여도 압력이 커져요.</p></div>
     <div class="note"><h3>압력계가 알려주는 것</h3><p>바늘은 안쪽 기체 입자가 벽을 미는 힘의 크기를 보여줘요. 바람을 넣지 않은 처음 상태는 바깥 공기와 같은 1기압이에요.</p></div>
-  </section>
-  <section class="logbox">
-    <div class="top"><h2>내 예상이 맞았을까요?</h2><button id="answerBtn1">정답 확인하기</button></div>
-    <p class="answer" id="answerMsg1" hidden></p>
   </section>
   <p class="foot">이 압력계는 바깥 공기(1기압)를 포함한 전체 압력을 보여줘요. 실제 펌프 압력계는 보통 바깥 공기보다 더 큰 만큼만 표시해요. 온도에 따른 입자 속도 차이는 눈에 잘 보이도록 실제보다 크게 나타냈고, 압력 값은 실제 비율대로 계산했어요.</p>
   </div>
@@ -505,6 +515,7 @@ footer{color:var(--muted);font-size:14px;text-align:right}
         <h2>내 예상이 맞았을까요?</h2>
         <button id="answerBtn">정답 확인하기</button>
         <p class="answer" id="answerMsg" hidden></p>
+        <button class="pumpbtn nextpg" data-next="1" type="button">다음 쪽 ▶ 펌프로 바람 넣기</button>
       </div>
     </section>
   </div>
@@ -990,7 +1001,7 @@ fsBtn.addEventListener('click',async()=>{
     setFull(false);
   }
 });
-document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&lab.classList.contains('full'))setFull(false);});
+document.addEventListener('fullscreenchange',()=>{if(document.fullscreenElement!==lab&&lab.classList.contains('full'))setFull(false);});
 addEventListener('keydown',e=>{if(e.key==='Escape'&&lab.classList.contains('full')&&!document.fullscreenElement)setFull(false);});
 
 /* ---------- 숫자판 ---------- */
@@ -1086,18 +1097,35 @@ requestAnimationFrame(frame);
 })();
 </script>
 <script>
-/* ===== 탭 ===== */
+/* ===== 탭 · 쪽 넘기기 ===== */
 (()=>{
 const tabs=document.querySelectorAll('.tabs button');
-tabs.forEach(b=>b.addEventListener('click',()=>{
-  const n=b.dataset.page;
-  tabs.forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));
+function resetLabs(){
+  [['lab','fsBtn'],['lab2','fsBtn2']].forEach(([l,b])=>{const el=document.getElementById(l),bt=document.getElementById(b);
+    if(el&&el.classList.contains('full')){el.classList.remove('full');const cv=el.querySelector('canvas');if(cv)cv.style.width='';}
+    if(bt){bt.textContent='전체화면';bt.setAttribute('aria-pressed','false');}});
+}
+async function goFull(){
+  const de=document.documentElement;
+  try{
+    if(document.fullscreenElement===de)return;
+    if(document.fullscreenElement)await document.exitFullscreen();
+    if(de.requestFullscreen)await de.requestFullscreen();
+  }catch(e){/* 브라우저가 막으면 그냥 넘어감 */}
+}
+function show(n){
+  tabs.forEach(x=>x.setAttribute('aria-pressed',x.dataset.page===n?'true':'false'));
   document.getElementById('pageT').hidden=n!=='T';
   document.getElementById('page1').hidden=n!=='1';
   document.getElementById('page2').hidden=n!=='2';
-  if(document.fullscreenElement){try{document.exitFullscreen();}catch(e){}}
+  const a=document.querySelector(n==='1'?'#page1 .subtabs button[data-sub="A"]':n==='2'?'#page2 .subtabs button[data-sub="A"]':null);
+  if(a)a.click();
+  window.scrollTo({top:0});
   window.dispatchEvent(new Event('resize'));
-}));
+}
+window.goPage=n=>{resetLabs();show(n);goFull();};
+tabs.forEach(b=>b.addEventListener('click',()=>window.goPage(b.dataset.page)));
+document.querySelectorAll('[data-next]').forEach(b=>b.addEventListener('click',()=>window.goPage(b.dataset.next)));
 })();
 
 /* ===== 2쪽 ===== */
@@ -1107,7 +1135,8 @@ const page=$('page2'),pA=$('p2A'),pB=$('p2B');
 const CHOICES={1:'① 위에서 아래로만',2:'② 옆에서만',3:'③ 모든 방향에서'};const SHORT={1:'① 위에서만',2:'② 옆에서만',3:'③ 모든 방향'};
 let pick=0;
 const subs=document.querySelectorAll('#page2 .subtabs button');
-function showSub(k){subs.forEach(x=>x.setAttribute('aria-pressed',x.dataset.sub===k?'true':'false'));pA.hidden=k!=='A';pB.hidden=k!=='B';window.scrollTo({top:0});}
+function showSub(k){subs.forEach(x=>x.setAttribute('aria-pressed',x.dataset.sub===k?'true':'false'));pA.hidden=k!=='A';pB.hidden=k!=='B';window.scrollTo({top:0});
+  if(k==='B'&&!$('lab2').classList.contains('full'))$('fsBtn2').click();}
 subs.forEach(b=>b.addEventListener('click',()=>showSub(b.dataset.sub)));
 document.querySelectorAll('#page2 .choice').forEach(b=>b.addEventListener('click',()=>{
   pick=+b.dataset.c;
@@ -1546,7 +1575,7 @@ function setFull(on){lab.classList.toggle('full',on);fsBtn.textContent=on?'전�
 fsBtn.addEventListener('click',async()=>{const on=!lab.classList.contains('full');
   if(on){setFull(true);try{if(lab.requestFullscreen)await lab.requestFullscreen();}catch(e){}}
   else{try{if(document.fullscreenElement)await document.exitFullscreen();}catch(e){}setFull(false);}});
-document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&lab.classList.contains('full'))setFull(false);});
+document.addEventListener('fullscreenchange',()=>{if(document.fullscreenElement!==lab&&lab.classList.contains('full'))setFull(false);});
 addEventListener('keydown',e=>{if(e.key==='Escape'&&lab.classList.contains('full')&&!document.fullscreenElement)setFull(false);});
 
 let uiT=0;
@@ -1994,7 +2023,8 @@ requestAnimationFrame(frame);
 (()=>{
 const $=id=>document.getElementById(id);
 const pA=$('p1A'),pB=$('p1B'),subs=document.querySelectorAll('#page1 .subtabs button');
-function show(k){subs.forEach(x=>x.setAttribute('aria-pressed',x.dataset.sub===k?'true':'false'));pA.hidden=k!=='A';pB.hidden=k!=='B';window.scrollTo({top:0});window.dispatchEvent(new Event('resize'));}
+function show(k){subs.forEach(x=>x.setAttribute('aria-pressed',x.dataset.sub===k?'true':'false'));pA.hidden=k!=='A';pB.hidden=k!=='B';window.scrollTo({top:0});window.dispatchEvent(new Event('resize'));
+  if(k==='B'&&!$('lab').classList.contains('full'))$('fsBtn').click();}
 subs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.sub)));
 // 그림: 축구공 속 입자
 function rnd(i){const s=Math.sin(i*91.7+13.1)*43758.5;return s-Math.floor(s);}
