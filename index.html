@@ -171,6 +171,28 @@ footer{color:var(--muted);font-size:14px;text-align:right}
 #pageT .tcamtip{margin:0;font-weight:700;font-size:clamp(15px,1.6vw,20px);white-space:nowrap}
 #pageT .tcambar{display:flex;gap:10px}
 #pageT .tcambar .tbtn{font-size:20px;padding:12px 22px}
+
+/* 3쪽 A: 두 문제를 한 화면에 */
+#p1A .quiz{padding:10px 18px 12px;gap:8px}
+#p1A .qrow{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px}
+#page1 .subtabs{margin-bottom:8px}
+#page1 .subtabs button{padding:6px 14px}
+#p1A .quiz .q{font-size:clamp(26px,3vw,38px)}
+#p1A .quiz .qsub{font-size:clamp(15px,1.5vw,18px)}
+#p1A .fq{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;flex-direction:initial}
+#p1A .fqcol{display:flex;flex-direction:column;gap:4px;min-width:0}
+#p1A .fq .sent,#p1A .fqend .sent{font-size:clamp(22px,2.5vw,34px)}
+#p1A .choices.two{max-width:none;gap:10px}
+#p1A .choice{padding:6px 10px;gap:6px;flex-direction:row;justify-content:center}
+#p1A .choice .pic{max-width:none;display:flex;justify-content:center}
+#p1A .choice .pic svg{width:auto;height:min(20vh,190px);max-width:100%}
+#p1A .choice .pic{flex:0 1 auto;min-width:0}
+#p1A .choice .ct{font-size:clamp(22px,2.4vw,32px);white-space:nowrap;flex:0 0 auto}
+#p1A .choice .mark{top:6px;left:8px;width:40px;height:40px;font-size:24px;border-width:3px}
+#p1A .fqend{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+#p1A .fqend .sent{margin:0;font-family:var(--f-display);white-space:nowrap}
+#p1A .fqend .pumpbtn{font-size:20px;padding:8px 16px}
+@media (max-width:800px){#p1A .fq{grid-template-columns:1fr}}
 /* ===== 1쪽: 호랑이 풍선 ===== */
 
 /* Layout: 제목 → 큰 3D 무대(오버레이: 상태 칩, 내 얼굴 카드, 시점 안내, 쿵 효과) → 조작 두 줄. 어두운 단일 테마 */
@@ -303,24 +325,29 @@ footer{color:var(--muted);font-size:14px;text-align:right}
   </nav>
   <div id="p1A">
     <section class="quiz">
-      <h2 class="q">축구공 속 공기의 압력을 크게 하려면?</h2>
-      <p class="qsub">괄호 안에 들어갈 말을 골라 ○표 하세요.</p>
+      <div class="qrow"><h2 class="q">축구공 속 공기의 압력을 크게 하려면?</h2><p class="qsub">알맞은 말에 ○표 하세요.</p></div>
       <div class="fq">
+        <div class="fqcol">
         <p class="sent">입자 수를 <span class="blank" id="blankN">(　　　)</span> 할수록,</p>
         <div class="choices two">
           <button class="choice" data-q="n" data-v="많게" aria-pressed="false"><span class="mark">○</span><span class="pic" data-pic="many"></span><span class="ct">많게</span></button>
           <button class="choice" data-q="n" data-v="적게" aria-pressed="false"><span class="mark">○</span><span class="pic" data-pic="few"></span><span class="ct">적게</span></button>
         </div>
+        </div>
+        <div class="fqcol">
         <p class="sent">공기의 온도가 <span class="blank" id="blankT">(　　　)</span> 수록,</p>
         <div class="choices two">
           <button class="choice" data-q="t" data-v="높을" aria-pressed="false"><span class="mark">○</span><span class="pic" data-pic="hot"></span><span class="ct">높을</span></button>
           <button class="choice" data-q="t" data-v="낮을" aria-pressed="false"><span class="mark">○</span><span class="pic" data-pic="cold"></span><span class="ct">낮을</span></button>
         </div>
-        <p class="sent">압력은 커질 것이다.</p>
+        </div>
       </div>
-      <div class="pick" id="pickBox1" hidden>
-        <p id="pickMsg1">내 예상: </p>
-        <button class="pumpbtn" id="goB1">B. 시뮬레이션으로 확인하기</button>
+      <div class="fqend">
+        <p class="sent">압력은 커질 것이다.</p>
+        <div class="pick" id="pickBox1" hidden>
+          <p id="pickMsg1" hidden>내 예상: </p>
+          <button class="pumpbtn" id="goB1">B. 시뮬레이션으로 확인하기</button>
+        </div>
       </div>
     </section>
   </div>
@@ -1982,7 +2009,7 @@ function ball(kind){
   let th='';
   if(kind==='hot'||kind==='cold'){const h=kind==='hot'?62:18,c=kind==='hot'?'#ff5a3c':'#4aa3ff';
     th=`<rect x="196" y="26" width="16" height="96" rx="8" fill="#e8eef2"/><rect x="200" y="${116-h}" width="8" height="${h}" rx="4" fill="${c}"/><circle cx="204" cy="128" r="13" fill="${c}"/>`;}
-  return `<svg viewBox="0 0 230 172"><circle cx="110" cy="86" r="66" fill="#1c2a35" stroke="#eef1f3" stroke-width="7"/>
+  return `<svg viewBox="38 14 186 146"><circle cx="110" cy="86" r="66" fill="#1c2a35" stroke="#eef1f3" stroke-width="7"/>
   <path d="M110 58 L130 72 L122 96 L98 96 L90 72Z" fill="none" stroke="#5b6a75" stroke-width="3"/>${dots}${th}</svg>`;
 }
 document.querySelectorAll('#page1 .pic').forEach(el=>el.innerHTML=ball(el.dataset.pic));
