@@ -1,21 +1,15 @@
-<!doctype html>
-<html lang="ko">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>압력 골렘의 봉인</title>
+<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <style>
-:root{--bg:#0d1020;--panel:#171b31;--panel2:#20253f;--line:#2f3660;--text:#eef0ff;--muted:#9ea6cc;--gold:#ffd166;--green:#4ade80;--red:#f87171;--blue:#60a5fa;--purple:#c084fc}
+:root{color-scheme:dark;--bg:#0d1020;--panel:#171b31;--panel2:#20253f;--line:#2f3660;--text:#eef0ff;--muted:#9ea6cc;--gold:#ffd166;--green:#4ade80;--red:#f87171;--blue:#60a5fa;--purple:#c084fc}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:17px;line-height:1.5}
 body{background:radial-gradient(1200px 600px at 70% -10%,#2a1f5a 0,transparent 60%),var(--bg);min-height:100vh}
 h1,h2,h3,.jua{font-family:'Jua','Noto Sans KR',sans-serif;font-weight:400;margin:0}
-.wrap{max-width:1300px;margin:0 auto;padding:14px 16px 30px}
+.wrap{max-width:1300px;margin:0 auto;padding-block:14px 30px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
 .card+.card{margin-top:12px}
 .muted{color:var(--muted)}
@@ -291,8 +285,6 @@ canvas.sim[data-sim="ball"]{height:min(23vh,190px)}
 .cards .pc-stats{grid-template-columns:repeat(3,auto minmax(0,1fr));font-size:11px;gap:2px 5px}.cards .pc-owner{min-height:28px;font-size:19px;padding-top:4px}
 .namebox{margin-top:8px}.namebox input{font-size:20px;padding:7px 10px;width:180px}
 </style>
-</head>
-<body>
 <div id="app"></div>
 <div id="overlay"></div>
 <div id="toast"></div>
@@ -541,6 +533,8 @@ function toast(t){ const el = $('#toast'); el.textContent = t; el.style.display 
 
 function members(){ return (room && room.members) || {}; }
 function joined(){ return ROLE_ORDER.filter(r => members()[r]); }
+function fullOf(r){ const M = (r && r.members) || {}; return BASE.every(x => M[x]); }
+function fullParty(){ return fullOf(room); }
 function stOf(r, id){ return (r && r.st && r.st[id]) || {}; }
 function st(id){ return stOf(room, id); }
 function solved(id){ return !!st(id).solved; }
@@ -561,23 +555,20 @@ function items(){ return (room && room.items) || {}; }
 /* 역할이 빠진 모둠: 다른 멤버가 대신 맡기 */
 function actors(id){
   const P = PLACES[id]; const req = P.need === 'all' ? BASE : P.need;
-  const map = {}, M = members();
-  for (const r of req) if (M[r]) map[r] = r;   // 역할 대신 맡기 없음: 그 역할 학생만 풀 수 있음
+  const map = {}, used = new Set(), M = members(), j = joined();
+  for (const r of req) map[r] = r;   // 대신 맡기 없음: 그 역할이 직접 와야 함
   return map;
 }
 function myDuties(id){ const a = actors(id); return Object.keys(a).filter(r => a[r] === me.role); }
 function presentAt(id){ return joined().filter(r => members()[r].loc === id); }
 function presenceOK(id){
-  const M = members();
-  if (PLACES[id].need === 'all') return BASE.every(r => M[r]) && joined().every(r => M[r].loc === id);
-  return PLACES[id].need.every(r => M[r] && M[r].loc === id);
+  if (PLACES[id].need === 'all') return fullParty() && joined().every(r => members()[r].loc === id);
+  return fullParty() && Object.values(actors(id)).every(r => members()[r] && members()[r].loc === id);
 }
 function missingAt(id){
-  const M = members();
-  if (PLACES[id].need === 'all') return [...BASE.filter(r => !M[r]), ...joined().filter(r => M[r].loc !== id)];
-  return PLACES[id].need.filter(r => !M[r] || M[r].loc !== id);
+  if (PLACES[id].need === 'all') return joined().filter(r => members()[r].loc !== id);
+  return [...new Set(Object.values(actors(id)))].filter(r => !members()[r] || members()[r].loc !== id);
 }
-const partyFull = () => BASE.every(r => members()[r]);
 
 /* ===================== 게임 동작 ===================== */
 function damage(r, reason){
@@ -650,7 +641,7 @@ const ACT = {
       try { await DB.update('', {[`players/${uid}`]:`c${c}/g${g}/${role}`, [`${path}/seats/${role}`]:uid, [`${path}/uids/${uid}`]:role}); }
       catch(e) {
         const mine = await DB.get('players/' + uid).catch(() => null);
-        return toast(mine ? '이 크롬북은 이미 다른 자리에 들어가 있어요. 선생님께 말해 줘!' : '⏰ 이 파티는 시작한 지 5분이 지나 빈자리가 닫혔어요. 선생님께 자리를 열어 달라고 해 줘!');
+        return toast(mine ? '이 크롬북은 이미 다른 자리에 들어가 있어요. 선생님께 말해 줘!' : '⏰ 이 파티는 시작한 지 5분이 지나 빈자리가 닫혔어요. 다른 번호 파티로 들어가 줘!');
       }
     }
     const r = (await DB.get(path).catch(() => null)) || {};
@@ -659,10 +650,12 @@ const ACT = {
     else await DB.update(path, {[`members/${entry.role}/name`]:nm, [`members/${entry.role}/seen`]:now()});
     DB.push(path + '/log', {t:now(), m:`🙋 ${RN(entry.role)} ${J(nm, '이', '가')} 파티에 합류했다`});
     if (DEMO_ONLY) {
-      const o = {startedAt:NOW};
+      const o = {};
       for (const r of BASE) if (r !== entry.role) { o[`members/${r}`] = {loc:'gate', hp:3, stunUntil:0, seen:now(), name:DEMO_NAMES[r]}; o[`seats/${r}`] = 'demo-' + r; }
       await DB.update(path, o);
     }
+    const r2 = (await DB.get(path).catch(() => null)) || {};
+    if (!r2.startedAt && fullOf(r2)) { await DB.update(path, {startedAt:NOW}).catch(() => {}); DB.push(path + '/log', {t:now(), m:'🗺️ 4명이 모두 모였다! 모험 시작!'}).catch(() => {}); }
     me = {cls:entry.cls, grp:entry.grp, role:entry.role, name:nm}; entry.resume = null;
     try { sessionStorage.setItem('pq_me2', JSON.stringify(me)); } catch(e){}
     if (unsubEntry) { unsubEntry(); unsubEntry = null; }
@@ -670,7 +663,10 @@ const ACT = {
   },
   resume(){ const r = entry.resume; if (!r) return; entry.resume = null; if (unsubEntry) { unsubEntry(); unsubEntry = null; } me = r; startRoom(); },
   forget(){ entry.resume = null; try { sessionStorage.removeItem('pq_me2'); } catch(e){} renderEntry(); },
-
+  start(){
+    if (!fullParty()) return toast('용사·마법사·성직자·힐러 4명이 모두 들어와야 출발할 수 있어!');
+    upd({startedAt:now()}); log('🗺️ 모험 시작!');
+  },
   leave(){
     if (DB.mode !== 'local' && !confirm('나가기 할까요? (다시 같은 반·모둠·역할로 들어오면 이어서 할 수 있어요)')) return;
     try { sessionStorage.removeItem('pq_me2'); } catch(e){}
@@ -850,7 +846,7 @@ const ACT = {
   },
   tDelT(d){ if (confirm(`${d.e} 선생님을 목록에서 뺄까요?`)) DB.update('teachers', {[emailKey(d.e)]:null}).catch(() => toast('빼지 못했어요')); },
   tLockToggle(){ DB.update('locks', {[`c${teacher.cls}`]:!classLocked}).then(() => toast(classLocked ? '🔒 입장을 마감했어요' : '🔓 입장을 다시 열었어요')).catch(() => toast('바꾸지 못했어요')); },
-  tFree(d){ const r = (classData || {})['g' + d.g] || {}, uid = (r.seats || {})[d.r]; if (!confirm(`${d.g}번 파티 ${RN(d.r)} 자리를 비울까요? (그 학생이 다시 고를 수 있어요)`)) return; const p = `escape/c${teacher.cls}/g${d.g}`; const o = {[`${p}/seats/${d.r}`]:null, [`${p}/members/${d.r}`]:null, [`reopen/c${teacher.cls}/g${d.g}`]:NOW}; if (uid) { o[`${p}/uids/${uid}`] = null; o[`players/${uid}`] = null; } DB.update('', o).catch(() => toast('지우지 못했어요')); },
+  tFree(d){ const r = (classData || {})['g' + d.g] || {}, uid = (r.seats || {})[d.r]; if (!confirm(`${d.g}번 파티 ${RN(d.r)} 자리를 비울까요? (그 학생이 다시 고를 수 있어요)`)) return; const p = `escape/c${teacher.cls}/g${d.g}`; const o = {[`${p}/seats/${d.r}`]:null, [`${p}/members/${d.r}`]:null}; if (uid) { o[`${p}/uids/${uid}`] = null; o[`players/${uid}`] = null; } DB.update('', o).catch(() => toast('지우지 못했어요')); },
   async switchRole(d){
     const r = d.r; if (r === me.role) return;
     if (!members()[r]) await upd({[`members/${r}`]:{loc:'gate', hp:3, stunUntil:0, seen:now(), name:DEMO_NAMES[r]}});
@@ -1581,23 +1577,20 @@ function render(){
   }
   renderedOnce = true;
   sfxDiff();
-  if (!room.startedAt && partyFull() && !ui.starting) {   // 4명이 모두 모이면 자동 출발
-    ui.starting = true;
-    DB.update(rp(), {startedAt:NOW}).then(() => log('🗺️ 4명이 모두 모였다! 모험 시작!')).catch(() => {}).finally(() => { setTimeout(() => ui.starting = false, 1500); });
-  }
-  if (!room.startedAt || (!partyFull() && stage() < 5)) renderLobby(); else renderGame();   // 중간에 자리가 비면 다시 모일 때까지 멈춤
+  if (!room.startedAt && fullParty()) { upd({startedAt:NOW}); log('🗺️ 4명이 모두 모였다! 모험 시작!'); }
+  if (!room.startedAt || !fullParty()) renderLobby(); else renderGame();
   renderOverlay();
 }
 function renderLobby(){
   setScreen('lobby', `<div class="wrap"><div class="entry wide card" id="lobby" style="max-width:900px"></div>${FOOT}</div>`);
   const j = joined();
   paint($('#lobby'), `${MODE_BANNER()}
-    ${demoBar()}<h1 class="jua" style="font-size:32px;text-align:center">⛺ ${me.cls}반 ${me.grp}번 파티 ${room.startedAt ? '다시 모이는 중' : '모이는 중'}</h1>
+    ${demoBar()}<h1 class="jua" style="font-size:32px;text-align:center">⛺ ${me.cls}반 ${me.grp}모둠 파티 모이는 중</h1>
     <div class="seats">${ROLE_ORDER.map(r => members()[r]
       ? `<div class="seat in" style="--c:${CHARS.color(r)}">${portrait(r)}<b>${esc(NAME(r) || RN(r))}</b>${RN(r)}${r === me.role ? ' · 나' : ''}</div>`
       : `<div class="seat"><div style="font-size:40px;margin:14px 0 8px">❔</div><b>빈 자리</b>${RN(r)}${r === 'warrior' ? ' (5명 모둠)' : ''}</div>`).join('')}</div>
-    <div style="text-align:center"><div class="guide wait" style="justify-content:center;font-size:21px">⏳ 모험가 ${BASE.filter(r => members()[r]).length} / 4명 · ${room.startedAt ? '파티원 자리가 비어서 <b>잠시 멈췄어요</b>' : '<b>용사·마법사·성직자·힐러</b>가 모두 모이면 자동으로 출발해요!'}</div>
-    <p class="muted">${room.startedAt ? '선생님이 자리를 열어 주면 그 친구가 같은 역할로 다시 들어올 수 있어요. 4명이 다시 모이면 이어서 해요.' : '옆 친구들에게 같은 반·같은 번호 파티로 들어오라고 알려 줘! (5명 파티는 전사도 함께)'}</p></div>
+    <div style="text-align:center"><div class="jua" style="font-size:26px;margin:6px 0">${fullParty() ? '🗺️ 모험 시작!' : `⏳ 친구를 기다리는 중… (${BASE.filter(x => members()[x]).length} / 4)`}</div>
+    <p class="muted">${room.startedAt ? '⚠️ 파티원 자리가 비었어요. 4명이 다시 모여야 계속할 수 있어요.' : '용사·마법사·성직자·힐러 4명이 모두 들어오면 자동으로 시작해요. (전사는 5명 모둠만)'}</p></div>
     <div class="row" style="justify-content:center"><button class="btn sm" data-act="leave">나가기</button><button class="btn sm" data-act="help">❓ 게임 방법</button></div>`);
 }
 
@@ -2015,7 +2008,7 @@ function renderTeacher(){
       ${done.map((x, i) => `<tr><td>${medal[i] || i + 1}</td><td>${x.g}번 파티${x.sus ? ' ⚠️' : ''}</td><td>${esc(x.names.join(', '))}</td><td>${fmt(x.t)}</td><td>${x.it.gem || 0}</td><td>${x.it.gold || 0}</td></tr>`).join('')}</table>`
       : '<p class="muted">아직 골렘을 쓰러뜨린 파티가 없어요</p>'}</div>
     <div style="overflow-x:auto"><table class="rank"><tr><th>파티</th><th>모험가 (✕ 자리 비우기)</th><th>단계</th><th>시간</th><th>보물</th><th>이해 대기</th><th>확인 필요</th><th></th></tr>${rows}</table></div>
-    <p class="muted" style="font-size:13px">✕ 자리 비우기를 누르면 5분 동안 그 자리에 다시 들어올 수 있어요(크롬북이 꺼진 학생용). · 🔒 파티가 시작되고 5분이 지나면 빈자리가 <b>자동으로 닫혀요</b>. 더 일찍 막고 싶으면 <b>입장 마감</b>을 눌러 주세요. · ⚠️ 표시는 너무 빠르게 해결된 기록이에요. 해당 파티에게 어떻게 풀었는지 물어봐 주세요. · 수업이 끝나면 <b>이 반 기록 모두 지우기</b>를 눌러 학생 이름을 지워 주세요.</p>`);
+    <p class="muted" style="font-size:13px">🔒 파티가 시작되고 5분이 지나면 빈자리가 <b>자동으로 닫혀요</b>. 더 일찍 막고 싶으면 <b>입장 마감</b>을 눌러 주세요. · ⚠️ 표시는 너무 빠르게 해결된 기록이에요. 해당 파티에게 어떻게 풀었는지 물어봐 주세요. · 수업이 끝나면 <b>이 반 기록 모두 지우기</b>를 눌러 학생 이름을 지워 주세요.</p>`);
 }
 setInterval(() => { if (screen === 'teacher') renderTeacher(); }, 3000);
 
@@ -2026,5 +2019,5 @@ setInterval(() => { if (screen === 'teacher') renderTeacher(); }, 3000);
   showEntry();
 })();
 </script>
-</body>
-</html>
+
+</body></html>
